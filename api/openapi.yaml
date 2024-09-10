@@ -1,0 +1,2606 @@
+openapi: 3.1.0
+info:
+  description: An interface for working with HPC clusters.
+  title: HPC Portal - API
+  version: 1.9.10-9
+servers:
+- url: /
+paths:
+  /healthz:
+    get:
+      operationId: healthz
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: Successful Response
+      summary: Healthz
+      tags:
+      - health
+  /readyz:
+    get:
+      operationId: readyz
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: Successful Response
+      summary: Readyz
+      tags:
+      - health
+  /api/user/account/list:
+    get:
+      description: Get a list mapping user short to long accounts across all HPC clusters
+      operationId: get_user_account_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                title: Response Get User Account List
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: List user short and long accounts
+      tags:
+      - profile
+  /api/user/account/list/short:
+    get:
+      description: List user short accounts across all HPC clusters
+      operationId: get_user_account_list_short
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: List user short accounts
+      tags:
+      - profile
+  /api/user/account/list/long:
+    get:
+      description: List user long accounts across all HPC clusters
+      operationId: get_user_account_list_long
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: List user long accounts
+      tags:
+      - profile
+  /api/profile:
+    get:
+      description: Get user profile
+      operationId: get_profile
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Get Profile
+                type: object
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: Get Profile
+      tags:
+      - profile
+  /api/data/transfer_start:
+    post:
+      description: Launch DataTransfer pods in both source and destination clusters/namespaces
+      operationId: transfer_start
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataTransfer-Input'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Transfer Start
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Launch DataTransfer pods in both source and destination clusters/namespaces
+      tags:
+      - data_transfer
+  /api/data/transfer_terminate:
+    delete:
+      description: Terminate a data transfer between HPC clusters
+      operationId: transfer_terminate
+      parameters:
+      - explode: true
+        in: query
+        name: transfer_id
+        required: true
+        schema:
+          title: Transfer Id
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Transfer Terminate
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Terminate data transfer
+      tags:
+      - data_transfer
+  /api/data/transfer_clone:
+    get:
+      description: Clone a data transfer between HPC clusters
+      operationId: transfer_clone
+      parameters:
+      - explode: true
+        in: query
+        name: transfer_id
+        required: true
+        schema:
+          title: Transfer Id
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataTransfer-Output'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Clone data transfer
+      tags:
+      - data_transfer
+  /api/data/transfer_status:
+    get:
+      operationId: transfer_status
+      parameters:
+      - explode: true
+        in: query
+        name: transfer_id
+        required: true
+        schema:
+          title: Transfer Id
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataTransferStatus'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get data transfer status
+      tags:
+      - data_transfer
+  /api/data/transfer_list:
+    get:
+      description: List data transfers on all HPC clusters
+      operationId: transfer_list
+      parameters:
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/Status'
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          default: 0
+          title: Start
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          default: 15
+          title: End
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataTransferStatusList'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: List data transfers
+      tags:
+      - data_transfer
+  /api/data/target:
+    get:
+      operationId: target
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetStatus'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                title: Response Target
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get status of target
+      tags:
+      - data_transfer
+  /api/k8s/rbac:
+    post:
+      description: "Create Namespace, Roles and Role Bindings."
+      operationId: create_rbac
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardUser'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: "Create Namespace, Roles and Role Bindings."
+      tags:
+      - k8s
+  /api/k8s/clusters:
+    get:
+      description: List Clusters
+      operationId: list_clusters
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: List Clusters
+      tags:
+      - k8s
+      - k8s
+  /api/k8s/status_types:
+    get:
+      description: Get supported status types
+      operationId: get_status_types
+      parameters:
+      - explode: true
+        in: query
+        name: job_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/Kind'
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get supported status types
+      tags:
+      - k8s
+  /api/k8s/job_priority_types:
+    get:
+      description: Get supported job priority types
+      operationId: get_job_priority_types
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+      summary: Get supported job priority types
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/image/default:
+    get:
+      description: Get default container image for a given HPC cluster.
+      operationId: cluster_image_default
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Cluster Image Default
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get default container image
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/jobs/kinds:
+    get:
+      description: List types of jobs supported.
+      operationId: list_job_kinds
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties:
+                    type: string
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: List types of jobs supported
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/namespaces:
+    get:
+      description: "Get namespaces to which user has full permission to create jobs,\
+        \ services and hpclab etc."
+      operationId: get_users_namespaces
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNamespacesResp'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get user's namespaces
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/namespaces/{namespace}/job_priority_types:
+    get:
+      description: Get supported job priority types
+      operationId: get_job_priority_types_new
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get supported job priority types
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/namespaces/{namespace}/jobs:
+    post:
+      description: Create K8s Job
+      operationId: create_namespaced_job
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobBody'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateJobResp'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Create K8s Job
+      tags:
+      - k8s
+  /api/k8s/jobs/{job_id}:
+    delete:
+      description: Delete a job
+      operationId: terminate_job
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Delete a job
+      tags:
+      - k8s
+  /api/k8s/jobs/{job_id}/description:
+    get:
+      description: Get job description
+      operationId: get_job_description
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDescription'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get job description
+      tags:
+      - k8s
+    put:
+      description: Add job description
+      operationId: put_job_description
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobDescription'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDescriptionResp'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Add job description
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/namespaces/{namespace}/kind/{kind}/details:
+    get:
+      description: Get list of job/pytorchjob with basic details
+      operationId: get_all_jobs_details
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: kind
+        required: true
+        schema:
+          $ref: '#/components/schemas/Kind'
+        style: simple
+      - explode: true
+        in: query
+        name: job_name
+        required: false
+        schema:
+          default: ""
+          title: Job Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: owner
+        required: false
+        schema:
+          default: ""
+          title: Owner
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/Status'
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          default: 0
+          title: Start
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          default: 15
+          title: End
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: sort_by
+        required: false
+        schema:
+          $ref: '#/components/schemas/SortBy'
+        style: form
+      - explode: true
+        in: query
+        name: sort_order
+        required: false
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetailsModel'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get list of job/pytorchjob with basic details
+      tags:
+      - k8s
+  /api/k8s/jobs/{job_id}/details:
+    get:
+      description: Get basic details of a single job/pytorchjob
+      operationId: get_details_of_job
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobItem'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get basic details of a single job/pytorchjob
+      tags:
+      - k8s
+  /api/k8s/jobs/{job_id}/template:
+    get:
+      description: Get job template from existing job
+      operationId: get_template_from_job
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateJobBody'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get job template from existing job
+      tags:
+      - k8s
+  /api/k8s/jobs/{job_id}/logs:
+    get:
+      description: Get logs if pod is already deleted.
+      operationId: get_log_loki
+      parameters:
+      - explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Get Log Loki
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get logs
+      tags:
+      - k8s
+  /api/k8s/clusters/{cluster}/namespaces/{namespace}/pods/{pod_name}/containers/{container}/logs:
+    get:
+      description: Get container logs from a namespaced Pod.  `max_lines <= 0` will
+        fetch all Pod logs and only applies if `follow==False`
+      operationId: get_log
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: pod_name
+        required: true
+        schema:
+          title: Pod Name
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: container
+        required: true
+        schema:
+          title: Container
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: follow
+        required: false
+        schema:
+          default: false
+          title: Follow
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: max_lines
+        required: false
+        schema:
+          default: 10000
+          title: Max Lines
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Get Log
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Pod container logs
+      tags:
+      - k8s
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs:
+    get:
+      description: Get a list of PVCs in a namespace on a cluster
+      operationId: get_namespaced_pvcs
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PVCItemBasic'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: List namespaced PVCs
+      tags:
+      - pvc
+    post:
+      description: Create PVC
+      operationId: create_namespaced_pvcs
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePVC'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Create Namespaced Pvcs
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Create PVC
+      tags:
+      - pvc
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs_details:
+    get:
+      description: Get PVCs
+      operationId: get_namespaced_pvcs_details
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PVCItem'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get PVCs
+      tags:
+      - pvc
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs/{pvc_name}:
+    delete:
+      description: Delete PVC
+      operationId: delete_namespaced_pvcs
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: pvc_name
+        required: true
+        schema:
+          title: Pvc Name
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Delete Namespaced Pvcs
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Delete PVC
+      tags:
+      - pvc
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs/{pvc_name}/status:
+    get:
+      description: Get PVC's status
+      operationId: get_pvc_status
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: pvc_name
+        required: true
+        schema:
+          title: Pvc Name
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PVCStatus'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get PVC's status
+      tags:
+      - pvc
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs/{pvc_name}/viewer/start:
+    post:
+      description: Start PVCViewer pod
+      operationId: start_pvcviewer
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: pvc_name
+        required: true
+        schema:
+          title: Pvc Name
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Start Pvcviewer
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Start PVCViewer pod
+      tags:
+      - pvc
+  /api/data/clusters/{cluster}/namespaces/{namespace}/pvcs/{pvc_name}/viewer/stop:
+    delete:
+      description: Stop PVCViewer pod
+      operationId: stop_pvcviewer
+      parameters:
+      - explode: false
+        in: path
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/components/schemas/Cluster'
+        style: simple
+      - explode: false
+        in: path
+        name: namespace
+        required: true
+        schema:
+          title: Namespace
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: pvc_name
+        required: true
+        schema:
+          title: Pvc Name
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response Stop Pvcviewer
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Stop PVCViewer pod
+      tags:
+      - pvc
+components:
+  schemas:
+    Capacity:
+      example:
+        storage: storage
+      properties:
+        storage:
+          title: Storage
+          type: string
+      required:
+      - storage
+      title: Capacity
+    Cluster:
+      enum:
+      - All
+      - hpc-1
+      - hpc-2
+      - hpc-3
+      - hpc-4
+      title: Cluster
+      type: string
+    Condition:
+      example:
+        reason: reason
+        last_transition_time: 2000-01-23T04:56:07.000+00:00
+        message: message
+        type: type
+        status: status
+      properties:
+        last_transition_time:
+          format: date-time
+          nullable: true
+          type: string
+        message:
+          nullable: true
+          type: string
+        reason:
+          nullable: true
+          type: string
+        status:
+          title: Status
+          type: string
+        type:
+          title: Type
+          type: string
+      required:
+      - last_transition_time
+      - message
+      - reason
+      - status
+      - type
+      title: Condition
+    Container:
+      example:
+        termination_state:
+          reason: reason
+          finished_at: 2000-01-23T04:56:07.000+00:00
+          exit_code: 9
+          started_at: 2000-01-23T04:56:07.000+00:00
+          message: message
+          signal: 3
+        name: name
+      properties:
+        name:
+          title: Name
+          type: string
+        termination_state:
+          $ref: '#/components/schemas/ContainerTerminationState'
+      required:
+      - name
+      title: Container
+    ContainerTerminationState:
+      example:
+        reason: reason
+        finished_at: 2000-01-23T04:56:07.000+00:00
+        exit_code: 9
+        started_at: 2000-01-23T04:56:07.000+00:00
+        message: message
+        signal: 3
+      properties:
+        started_at:
+          format: date-time
+          nullable: true
+          type: string
+        finished_at:
+          format: date-time
+          nullable: true
+          type: string
+        exit_code:
+          nullable: true
+          type: integer
+        signal:
+          nullable: true
+          type: integer
+        message:
+          nullable: true
+          type: string
+        reason:
+          nullable: true
+          type: string
+      required:
+      - exit_code
+      - finished_at
+      - message
+      - reason
+      - signal
+      - started_at
+      title: ContainerTerminationState
+    CreateJobBody:
+      example:
+        cluster: All
+        image: image
+        pvcs:
+        - path: path
+          mount_path: mount_path
+          name: non-existing-pvc
+        - path: path
+          mount_path: mount_path
+          name: non-existing-pvc
+        job_priority: level-0
+        cpus: 1
+        interactive: false
+        description: ""
+        distributed: false
+        envs:
+        - name: name
+          value: value
+        - name: name
+          value: value
+        command: ""
+        memory_gb: 1
+        workdir: /
+        distributed_replicas: 0
+        gpus: 0
+        name: name
+        namespace: namespace
+        sysenvs:
+        - name: name
+          value: value
+        - name: name
+          value: value
+        shared_memory_gb: 0
+      properties:
+        name:
+          title: Name
+          type: string
+        namespace:
+          title: Namespace
+          type: string
+        cluster:
+          $ref: '#/components/schemas/Cluster'
+        description:
+          default: ""
+          title: Description
+          type: string
+        image:
+          title: Image
+          type: string
+        job_priority:
+          $ref: '#/components/schemas/JobPriority'
+        workdir:
+          default: /
+          title: Workdir
+          type: string
+        command:
+          default: ""
+          title: Command
+          type: string
+        interactive:
+          default: false
+          title: Interactive
+          type: boolean
+        distributed:
+          default: false
+          title: Distributed
+          type: boolean
+        distributed_replicas:
+          default: 2
+          minimum: 0.0
+          title: Distributed Replicas
+          type: integer
+        gpus:
+          default: 0
+          minimum: 0.0
+          title: Gpus
+          type: integer
+        cpus:
+          default: 20
+          minimum: 1.0
+          title: Cpus
+          type: integer
+        memory_gb:
+          default: 200
+          minimum: 1.0
+          title: Memory Gb
+          type: integer
+        shared_memory_gb:
+          default: 0
+          minimum: 0.0
+          title: Shared Memory Gb
+          type: integer
+        pvcs:
+          default: []
+          items:
+            $ref: '#/components/schemas/PVCs'
+          type: array
+        envs:
+          default: []
+          items:
+            $ref: '#/components/schemas/EnvVar'
+          type: array
+        sysenvs:
+          default: []
+          items:
+            $ref: '#/components/schemas/EnvVar'
+          type: array
+      required:
+      - cluster
+      - image
+      - name
+      - namespace
+      title: CreateJobBody
+    CreateJobResp:
+      example:
+        kind: kind
+        id: id
+        message: message
+        status: status
+      properties:
+        status:
+          title: Status
+          type: string
+        kind:
+          title: Kind
+          type: string
+        id:
+          title: Id
+          type: string
+        message:
+          title: Message
+          type: string
+      required:
+      - id
+      - kind
+      - message
+      - status
+      title: CreateJobResp
+    CreatePVC:
+      example:
+        storage_unit: Gi
+        name: name
+        namespace: namespace
+        storage: 1
+      properties:
+        name:
+          minLength: 1
+          title: Name
+          type: string
+        namespace:
+          minLength: 1
+          title: Namespace
+          type: string
+        storage:
+          minimum: 1.0
+          title: Storage
+          type: integer
+        storage_unit:
+          default: Gi
+          title: Storage Unit
+          type: string
+      required:
+      - name
+      - namespace
+      - storage
+      title: CreatePVC
+    DataTransfer-Input:
+      example:
+        description: description
+        transfer_id: transfer_id
+        source:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+        target:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+      properties:
+        transfer_id:
+          title: Transfer Id
+          type: string
+        description:
+          title: Description
+          type: string
+        source:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+        target:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+      required:
+      - description
+      - source
+      - target
+      - transfer_id
+      title: DataTransfer
+    DataTransfer-Output:
+      example:
+        description: description
+        transfer_id: transfer_id
+        source:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+        target:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+      properties:
+        transfer_id:
+          title: Transfer Id
+          type: string
+        description:
+          title: Description
+          type: string
+        source:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+        target:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+      required:
+      - description
+      - source
+      - target
+      - transfer_id
+      title: DataTransfer
+    DataTransferEndpoint:
+      example:
+        cluster: All
+        pvc_path: pvc_path
+        namespace: namespace
+        pvc: pvc
+      properties:
+        cluster:
+          $ref: '#/components/schemas/Cluster'
+        namespace:
+          title: Namespace
+          type: string
+        pvc:
+          title: Pvc
+          type: string
+        pvc_path:
+          title: Pvc Path
+          type: string
+      required:
+      - cluster
+      - namespace
+      - pvc
+      - pvc_path
+      title: DataTransferEndpoint
+    DataTransferLogs:
+      example:
+        source: source
+        target: target
+      properties:
+        source:
+          title: Source
+          type: string
+        target:
+          title: Target
+          type: string
+      required:
+      - source
+      - target
+      title: DataTransferLogs
+    DataTransferStatus:
+      example:
+        owner: owner
+        start_datetime: 2000-01-23T04:56:07.000+00:00
+        end_datetime: 2000-01-23T04:56:07.000+00:00
+        description: description
+        transfer_id: transfer_id
+        source:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+        logs:
+          source: source
+          target: target
+        status: All
+        target:
+          cluster: All
+          pvc_path: pvc_path
+          namespace: namespace
+          pvc: pvc
+      properties:
+        transfer_id:
+          title: Transfer Id
+          type: string
+        description:
+          title: Description
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+        start_datetime:
+          format: date-time
+          title: Start Datetime
+          type: string
+        end_datetime:
+          format: date-time
+          nullable: true
+          type: string
+        owner:
+          title: Owner
+          type: string
+        source:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+        target:
+          $ref: '#/components/schemas/DataTransferEndpoint'
+        logs:
+          $ref: '#/components/schemas/DataTransferLogs'
+      required:
+      - description
+      - end_datetime
+      - logs
+      - owner
+      - source
+      - start_datetime
+      - status
+      - target
+      - transfer_id
+      title: DataTransferStatus
+    DataTransferStatusList:
+      example:
+        metadata:
+          remaining_item_count: 0
+          start: 0
+          count: 0
+          end: 0
+        items:
+        - owner: owner
+          start_datetime: 2000-01-23T04:56:07.000+00:00
+          end_datetime: 2000-01-23T04:56:07.000+00:00
+          description: description
+          transfer_id: transfer_id
+          source:
+            cluster: All
+            pvc_path: pvc_path
+            namespace: namespace
+            pvc: pvc
+          logs:
+            source: source
+            target: target
+          status: All
+          target:
+            cluster: All
+            pvc_path: pvc_path
+            namespace: namespace
+            pvc: pvc
+        - owner: owner
+          start_datetime: 2000-01-23T04:56:07.000+00:00
+          end_datetime: 2000-01-23T04:56:07.000+00:00
+          description: description
+          transfer_id: transfer_id
+          source:
+            cluster: All
+            pvc_path: pvc_path
+            namespace: namespace
+            pvc: pvc
+          logs:
+            source: source
+            target: target
+          status: All
+          target:
+            cluster: All
+            pvc_path: pvc_path
+            namespace: namespace
+            pvc: pvc
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PaginationMetadata'
+        items:
+          items:
+            $ref: '#/components/schemas/DataTransferStatus'
+          type: array
+      required:
+      - items
+      - metadata
+      title: DataTransferStatusList
+    EnvVar:
+      example:
+        name: name
+        value: value
+      properties:
+        name:
+          title: Name
+          type: string
+        value:
+          title: Value
+          type: string
+      required:
+      - name
+      - value
+      title: EnvVar
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+      title: HTTPValidationError
+    JobDescription:
+      example:
+        description: description
+      properties:
+        description:
+          title: Description
+          type: string
+      required:
+      - description
+      title: JobDescription
+    JobDescriptionResp:
+      example:
+        detail: detail
+      properties:
+        detail:
+          title: Detail
+          type: string
+      required:
+      - detail
+      title: JobDescriptionResp
+    JobDetailsModel:
+      example:
+        metadata:
+          remaining_item_count: 0
+          start: 0
+          count: 0
+          end: 0
+        items:
+        - cluster: All
+          k8s_name: k8s_name
+          kind: All
+          creation_timestamp: 2000-01-23T04:56:07.000+00:00
+          cpu_count: 2
+          avg_gpu_utilization: 9.301444243932576
+          end_timestamp: 2000-01-23T04:56:07.000+00:00
+          gpu_count: 5
+          name: name
+          namespace: namespace
+          job_owner: job_owner
+          id: id
+          memory_count: 7
+          status: All
+        - cluster: All
+          k8s_name: k8s_name
+          kind: All
+          creation_timestamp: 2000-01-23T04:56:07.000+00:00
+          cpu_count: 2
+          avg_gpu_utilization: 9.301444243932576
+          end_timestamp: 2000-01-23T04:56:07.000+00:00
+          gpu_count: 5
+          name: name
+          namespace: namespace
+          job_owner: job_owner
+          id: id
+          memory_count: 7
+          status: All
+      properties:
+        metadata:
+          $ref: '#/components/schemas/JobMetadata'
+        items:
+          items:
+            $ref: '#/components/schemas/JobItemFlat'
+          type: array
+      required:
+      - items
+      - metadata
+      title: JobDetailsModel
+    JobItem:
+      example:
+        cluster: All
+        pvcs:
+        - path: path
+          mount_path: mount_path
+          name: non-existing-pvc
+        - path: path
+          mount_path: mount_path
+          name: non-existing-pvc
+        memory_limit_gb: 5
+        working_dir: working_dir
+        interactive: true
+        envs:
+        - name: name
+          value: value
+        - name: name
+          value: value
+        cpu_request: 1
+        avg_gpu_utilization: 7.061401241503109
+        memory_request_gb: 5
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        cpu_limit: 6
+        grafana_details_url: https://openapi-generator.tech
+        sysenvs:
+        - name: name
+          value: value
+        - name: name
+          value: value
+        id: id
+        shared_memory_gb: 2
+        image: image
+        k8s_name: k8s_name
+        job_priority: level-0
+        kind: All
+        creation_timestamp: 2000-01-23T04:56:07.000+00:00
+        services:
+        - label: label
+          url: https://openapi-generator.tech
+        - label: label
+          url: https://openapi-generator.tech
+        command: command
+        grafana_embed_url: https://openapi-generator.tech
+        job_description: job_description
+        gpu_count: 0
+        name: name
+        namespace: namespace
+        pods:
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          gpu_count: 2
+          creation_timestamp: 2000-01-23T04:56:07.000+00:00
+          name: name
+          gpu_utilization: 4.145608029883936
+          containers:
+          - termination_state:
+              reason: reason
+              finished_at: 2000-01-23T04:56:07.000+00:00
+              exit_code: 9
+              started_at: 2000-01-23T04:56:07.000+00:00
+              message: message
+              signal: 3
+            name: name
+          - termination_state:
+              reason: reason
+              finished_at: 2000-01-23T04:56:07.000+00:00
+              exit_code: 9
+              started_at: 2000-01-23T04:56:07.000+00:00
+              message: message
+              signal: 3
+            name: name
+          status:
+            phase: phase
+            start_time: 2000-01-23T04:56:07.000+00:00
+            reason: reason
+            conditions:
+            - reason: reason
+              last_transition_time: 2000-01-23T04:56:07.000+00:00
+              message: message
+              type: type
+              status: status
+            - reason: reason
+              last_transition_time: 2000-01-23T04:56:07.000+00:00
+              message: message
+              type: type
+              status: status
+            message: message
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          gpu_count: 2
+          creation_timestamp: 2000-01-23T04:56:07.000+00:00
+          name: name
+          gpu_utilization: 4.145608029883936
+          containers:
+          - termination_state:
+              reason: reason
+              finished_at: 2000-01-23T04:56:07.000+00:00
+              exit_code: 9
+              started_at: 2000-01-23T04:56:07.000+00:00
+              message: message
+              signal: 3
+            name: name
+          - termination_state:
+              reason: reason
+              finished_at: 2000-01-23T04:56:07.000+00:00
+              exit_code: 9
+              started_at: 2000-01-23T04:56:07.000+00:00
+              message: message
+              signal: 3
+            name: name
+          status:
+            phase: phase
+            start_time: 2000-01-23T04:56:07.000+00:00
+            reason: reason
+            conditions:
+            - reason: reason
+              last_transition_time: 2000-01-23T04:56:07.000+00:00
+              message: message
+              type: type
+              status: status
+            - reason: reason
+              last_transition_time: 2000-01-23T04:56:07.000+00:00
+              message: message
+              type: type
+              status: status
+            message: message
+        job_owner: job_owner
+        status: All
+      properties:
+        cluster:
+          $ref: '#/components/schemas/Cluster'
+        id:
+          title: Id
+          type: string
+        name:
+          title: Name
+          type: string
+        k8s_name:
+          title: K8S Name
+          type: string
+        namespace:
+          title: Namespace
+          type: string
+        kind:
+          $ref: '#/components/schemas/Kind'
+        command:
+          title: Command
+          type: string
+        image:
+          title: Image
+          type: string
+        gpu_count:
+          title: Gpu Count
+          type: integer
+        cpu_limit:
+          title: Cpu Limit
+          type: integer
+        cpu_request:
+          title: Cpu Request
+          type: integer
+        memory_limit_gb:
+          title: Memory Limit Gb
+          type: integer
+        memory_request_gb:
+          title: Memory Request Gb
+          type: integer
+        shared_memory_gb:
+          title: Shared Memory Gb
+          type: integer
+        working_dir:
+          title: Working Dir
+          type: string
+        avg_gpu_utilization:
+          title: Avg Gpu Utilization
+          type: number
+        interactive:
+          title: Interactive
+          type: boolean
+        services:
+          items:
+            $ref: '#/components/schemas/Service'
+          type: array
+        creation_timestamp:
+          format: date-time
+          title: Creation Timestamp
+          type: string
+        end_timestamp:
+          format: date-time
+          nullable: true
+          type: string
+        pods:
+          items:
+            $ref: '#/components/schemas/Pod'
+          type: array
+        pvcs:
+          items:
+            $ref: '#/components/schemas/PVCs'
+          type: array
+        envs:
+          items:
+            $ref: '#/components/schemas/EnvVar'
+          type: array
+        sysenvs:
+          items:
+            $ref: '#/components/schemas/EnvVar'
+          type: array
+        job_owner:
+          title: Job Owner
+          type: string
+        job_description:
+          title: Job Description
+          type: string
+        job_priority:
+          $ref: '#/components/schemas/JobPriority'
+        status:
+          $ref: '#/components/schemas/Status'
+        grafana_embed_url:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          title: Grafana Embed Url
+          type: string
+        grafana_details_url:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          title: Grafana Details Url
+          type: string
+      required:
+      - avg_gpu_utilization
+      - cluster
+      - command
+      - cpu_limit
+      - cpu_request
+      - creation_timestamp
+      - end_timestamp
+      - envs
+      - gpu_count
+      - grafana_details_url
+      - grafana_embed_url
+      - id
+      - image
+      - interactive
+      - job_description
+      - job_owner
+      - job_priority
+      - k8s_name
+      - kind
+      - memory_limit_gb
+      - memory_request_gb
+      - name
+      - namespace
+      - pods
+      - pvcs
+      - services
+      - shared_memory_gb
+      - sysenvs
+      - working_dir
+      title: JobItem
+    JobItemFlat:
+      example:
+        cluster: All
+        k8s_name: k8s_name
+        kind: All
+        creation_timestamp: 2000-01-23T04:56:07.000+00:00
+        cpu_count: 2
+        avg_gpu_utilization: 9.301444243932576
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        gpu_count: 5
+        name: name
+        namespace: namespace
+        job_owner: job_owner
+        id: id
+        memory_count: 7
+        status: All
+      properties:
+        cluster:
+          $ref: '#/components/schemas/Cluster'
+        id:
+          title: Id
+          type: string
+        name:
+          title: Name
+          type: string
+        k8s_name:
+          title: K8S Name
+          type: string
+        namespace:
+          title: Namespace
+          type: string
+        kind:
+          $ref: '#/components/schemas/Kind'
+        gpu_count:
+          title: Gpu Count
+          type: integer
+        cpu_count:
+          title: Cpu Count
+          type: integer
+        memory_count:
+          title: Memory Count
+          type: integer
+        avg_gpu_utilization:
+          title: Avg Gpu Utilization
+          type: number
+        creation_timestamp:
+          format: date-time
+          title: Creation Timestamp
+          type: string
+        job_owner:
+          title: Job Owner
+          type: string
+        end_timestamp:
+          format: date-time
+          nullable: true
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - avg_gpu_utilization
+      - cluster
+      - cpu_count
+      - creation_timestamp
+      - end_timestamp
+      - gpu_count
+      - id
+      - job_owner
+      - k8s_name
+      - kind
+      - memory_count
+      - name
+      - namespace
+      title: JobItemFlat
+    JobMetadata:
+      example:
+        remaining_item_count: 0
+        start: 0
+        count: 0
+        end: 0
+      properties:
+        start:
+          default: 0
+          minimum: 0.0
+          title: Start
+          type: integer
+        end:
+          default: 15
+          minimum: 0.0
+          title: End
+          type: integer
+        count:
+          default: 15
+          minimum: 0.0
+          title: Count
+          type: integer
+        remaining_item_count:
+          default: 0
+          minimum: 0.0
+          title: Remaining Item Count
+          type: integer
+      title: JobMetadata
+    JobPriority:
+      enum:
+      - level-0
+      - level-1
+      - level-2
+      - level-mn
+      title: JobPriority
+      type: string
+    Kind:
+      enum:
+      - All
+      - Job
+      - PyTorchJob
+      - EdaPod
+      title: Kind
+      type: string
+    OnboardUser:
+      example:
+        cluster: cluster
+        namespace: namespace
+      properties:
+        namespace:
+          title: Namespace
+          type: string
+        cluster:
+          title: Cluster
+          type: string
+      required:
+      - cluster
+      - namespace
+      title: OnboardUser
+    PVCItem:
+      example:
+        owner: owner
+        cluster: All
+        usage: usage
+        quota: quota
+        name: name
+        namespace: namespace
+        pvcviewer:
+          url: url
+          status: All
+        usage_percent: 0
+      properties:
+        name:
+          title: Name
+          type: string
+        namespace:
+          title: Namespace
+          type: string
+        cluster:
+          $ref: '#/components/schemas/Cluster'
+        owner:
+          title: Owner
+          type: string
+        usage_percent:
+          title: Usage Percent
+          type: integer
+        usage:
+          title: Usage
+          type: string
+        quota:
+          title: Quota
+          type: string
+        pvcviewer:
+          $ref: '#/components/schemas/PVCViewer'
+      required:
+      - cluster
+      - name
+      - namespace
+      - owner
+      - pvcviewer
+      - quota
+      - usage
+      - usage_percent
+      title: PVCItem
+    PVCItemBasic:
+      example:
+        owner: owner
+        name: name
+      properties:
+        name:
+          title: Name
+          type: string
+        owner:
+          title: Owner
+          type: string
+      required:
+      - name
+      - owner
+      title: PVCItemBasic
+    PVCStatus:
+      example:
+        phase: phase
+        allocated_resource_statuses: ""
+        allocated_resources: ""
+        conditions: ""
+        access_modes:
+        - access_modes
+        - access_modes
+        capacity:
+          storage: storage
+      properties:
+        access_modes:
+          items:
+            type: string
+          type: array
+        allocated_resource_statuses: {}
+        allocated_resources: {}
+        capacity:
+          $ref: '#/components/schemas/Capacity'
+        conditions: {}
+        phase:
+          title: Phase
+          type: string
+      required:
+      - access_modes
+      - allocated_resource_statuses
+      - allocated_resources
+      - capacity
+      - conditions
+      - phase
+      title: PVCStatus
+    PVCViewer:
+      example:
+        url: url
+        status: All
+      properties:
+        url:
+          title: Url
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - status
+      - url
+      title: PVCViewer
+    PVCs:
+      example:
+        path: path
+        mount_path: mount_path
+        name: non-existing-pvc
+      properties:
+        name:
+          default: non-existing-pvc
+          title: Name
+          type: string
+        path:
+          nullable: true
+          type: string
+        mount_path:
+          nullable: true
+          type: string
+      title: PVCs
+    PaginationMetadata:
+      example:
+        remaining_item_count: 0
+        start: 0
+        count: 0
+        end: 0
+      properties:
+        start:
+          default: 0
+          minimum: 0.0
+          title: Start
+          type: integer
+        end:
+          default: 15
+          minimum: 0.0
+          title: End
+          type: integer
+        count:
+          default: 15
+          minimum: 0.0
+          title: Count
+          type: integer
+        remaining_item_count:
+          default: 0
+          minimum: 0.0
+          title: Remaining Item Count
+          type: integer
+      title: PaginationMetadata
+    Pod:
+      example:
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        gpu_count: 2
+        creation_timestamp: 2000-01-23T04:56:07.000+00:00
+        name: name
+        gpu_utilization: 4.145608029883936
+        containers:
+        - termination_state:
+            reason: reason
+            finished_at: 2000-01-23T04:56:07.000+00:00
+            exit_code: 9
+            started_at: 2000-01-23T04:56:07.000+00:00
+            message: message
+            signal: 3
+          name: name
+        - termination_state:
+            reason: reason
+            finished_at: 2000-01-23T04:56:07.000+00:00
+            exit_code: 9
+            started_at: 2000-01-23T04:56:07.000+00:00
+            message: message
+            signal: 3
+          name: name
+        status:
+          phase: phase
+          start_time: 2000-01-23T04:56:07.000+00:00
+          reason: reason
+          conditions:
+          - reason: reason
+            last_transition_time: 2000-01-23T04:56:07.000+00:00
+            message: message
+            type: type
+            status: status
+          - reason: reason
+            last_transition_time: 2000-01-23T04:56:07.000+00:00
+            message: message
+            type: type
+            status: status
+          message: message
+      properties:
+        name:
+          title: Name
+          type: string
+        creation_timestamp:
+          format: date-time
+          title: Creation Timestamp
+          type: string
+        end_timestamp:
+          format: date-time
+          nullable: true
+          type: string
+        containers:
+          items:
+            $ref: '#/components/schemas/Container'
+          type: array
+        status:
+          $ref: '#/components/schemas/PodStatus'
+        gpu_count:
+          title: Gpu Count
+          type: integer
+        gpu_utilization:
+          title: Gpu Utilization
+          type: number
+      required:
+      - containers
+      - creation_timestamp
+      - end_timestamp
+      - gpu_count
+      - gpu_utilization
+      - name
+      - status
+      title: Pod
+    PodStatus:
+      example:
+        phase: phase
+        start_time: 2000-01-23T04:56:07.000+00:00
+        reason: reason
+        conditions:
+        - reason: reason
+          last_transition_time: 2000-01-23T04:56:07.000+00:00
+          message: message
+          type: type
+          status: status
+        - reason: reason
+          last_transition_time: 2000-01-23T04:56:07.000+00:00
+          message: message
+          type: type
+          status: status
+        message: message
+      properties:
+        conditions:
+          items:
+            $ref: '#/components/schemas/Condition'
+          nullable: true
+        start_time:
+          format: date-time
+          nullable: true
+          type: string
+        reason:
+          nullable: true
+          type: string
+        message:
+          nullable: true
+          type: string
+        phase:
+          title: Phase
+          type: string
+      required:
+      - conditions
+      - message
+      - phase
+      - reason
+      - start_time
+      title: PodStatus
+    Service:
+      example:
+        label: label
+        url: https://openapi-generator.tech
+      properties:
+        label:
+          title: Label
+          type: string
+        url:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          title: Url
+          type: string
+      required:
+      - label
+      - url
+      title: Service
+    SortBy:
+      enum:
+      - None
+      - JobName
+      - Owner
+      - CreationTime
+      - GpuUtilization
+      - GpuCount
+      - Status
+      - Cluster
+      title: SortBy
+      type: string
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      title: SortOrder
+      type: string
+    Status:
+      enum:
+      - All
+      - Running
+      - Pending
+      - Failed
+      - Succeeded
+      title: Status
+      type: string
+    TargetStatus:
+      example:
+        url: url
+      properties:
+        url:
+          title: Url
+          type: string
+      required:
+      - url
+      title: TargetStatus
+    UserNamespacesResp:
+      example:
+        own_namespaces:
+        - own_namespaces
+        - own_namespaces
+        other_namespaces:
+        - other_namespaces
+        - other_namespaces
+      properties:
+        own_namespaces:
+          items:
+            type: string
+          type: array
+        other_namespaces:
+          items:
+            type: string
+          type: array
+      required:
+      - other_namespaces
+      - own_namespaces
+      title: UserNamespacesResp
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - ValidationError_loc_inner
+        - ValidationError_loc_inner
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: '#/components/schemas/ValidationError_loc_inner'
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ValidationError_loc_inner:
+      anyOf:
+      - type: string
+      - type: integer
+  securitySchemes:
+    HTTPBearer:
+      scheme: bearer
+      type: http
